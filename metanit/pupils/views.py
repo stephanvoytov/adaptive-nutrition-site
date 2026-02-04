@@ -119,7 +119,7 @@ def index(request: HttpRequest):
 def create_superuser_view(request):
     # Защита секретным ключом
     secret_key = request.GET.get('key', '')
-    if secret_key != os.environ.get('SECRET_KEY')
+    if secret_key != os.environ.get('SECRET_KEY'):
         return HttpResponse('Unauthorized', status=401)
 
     if not User.objects.filter(username='admin').exists():
