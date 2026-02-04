@@ -77,22 +77,19 @@ WSGI_APPLICATION = 'metanit.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-    }
-}
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
-    DATABASES['default'] = dj_database_url.config(
-        default=DATABASE_URL
-    )
+DATABASES = {
+    'default': dj_database_url.parse(DATABASE_URL),
+    'OPTIONS': {
+        'sslmode': 'require',
+        'connect_timeout': 30,  # Увеличиваем таймаут подключения
+        'keepalives': 1,  # Включаем keepalive
+        'keepalives_idle': 30,  # Проверять каждые 30 секунд
+        'keepalives_interval': 10,  # Интервал между проверками
+        'keepalives_count': 5,  # Количество попыток
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

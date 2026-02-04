@@ -1,7 +1,10 @@
+import os
+
+from django.contrib.auth.models import User
 from django.db.models import Count
 from django.shortcuts import render, redirect
 from datetime import datetime, timedelta
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.contrib import messages
 
@@ -111,3 +114,20 @@ def pooling(request: HttpRequest):
 
 def index(request: HttpRequest):
     return render(request, 'index.html')
+
+
+def create_superuser_view(request):
+    # Защита секретным ключом
+    secret_key = request.GET.get('key', '')
+    if secret_key != os.environ.get('SUPERUSER_KEY', 'your-secret-key-here'):
+        return HttpResponse('Unauthorized', status=401)
+
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            username='admin',
+            email='admin@example.com',
+            password='your_password_here'  # Замените на надежный пароль
+        )
+        return HttpResponse('Superuser created successfully')
+    else:
+        return HttpResponse('Superuser already exists')
