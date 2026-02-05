@@ -4,17 +4,16 @@
 {% block title %}Выбор завтраков{% endblock %}
 
 {% block content %}
-
     <article>
         <hgroup>
             <h1>🍽️ Выбор завтраков</h1>
-            <h2>На оставшуюся неделю</h2>
+            <h2>На две недели вперед</h2>
         </hgroup>
 
         {% if not week_dates %}
         <article>
-            <h3>✅ На этой неделе выбор завершен</h3>
-            <p>Следующий выбор будет доступен в понедельник.</p>
+            <h3>✅ Выбор завершен</h3>
+            <p>Следующий выбор будет доступен позже.</p>
         </article>
         {% else %}
         <form method="POST">
@@ -44,10 +43,11 @@
                 </label>
             </fieldset>
 
+            {% for week in weeks_data %}
             <fieldset>
-                <legend>📅 Выбор завтраков</legend>
+                <legend>📅 Неделя {{ week.week_number }} ({{ week.week_start|date:"d.m.Y" }})</legend>
 
-                {% for day in week_data %}
+                {% for day in week.data %}
                 <article>
                     <h4>
                         {% if day.date.weekday == 0 %}Понедельник
@@ -80,6 +80,7 @@
                 </article>
                 {% endfor %}
             </fieldset>
+            {% endfor %}
 
             <button type="submit" class="contrast">💾 Сохранить выбор</button>
         </form>

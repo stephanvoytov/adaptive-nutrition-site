@@ -21,6 +21,4 @@ from pupils import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('pool/', views.pooling, name='pool'),
-    path('', views.index, name='index'),
-    path('create-superuser/', views.create_superuser_view, name='create-superuser'),
-]
+    path('', views.index, name='index'),]
