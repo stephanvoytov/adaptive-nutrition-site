@@ -4,8 +4,10 @@ pip install -r requirements.txt
 
 cd metanit
 
-echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@example.com', 'password')" | python manage.py shell
+python manage.py migrate
+
+echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.get_or_create(username='admin',
+defaults={'email': 'admin@example.com', 'is_staff': True, 'is_superuser': True}); user = User.objects.get(username='admin');
+user.set_password('password'); user.save()" | python manage.py shell
 
 python manage.py collectstatic --noinput
-
-python manage.py migrate
