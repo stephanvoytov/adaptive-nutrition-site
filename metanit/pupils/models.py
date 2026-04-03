@@ -29,7 +29,7 @@ class Pupil(models.Model):
 
 class Dish(models.Model):
     short_name = models.CharField(max_length=100, verbose_name='Короткое название блюда')
-    name = models.CharField(max_length=100, verbose_name='Название блюда', default='')
+    name = models.CharField(max_length=200, verbose_name='Название блюда', default='')
 
     class Meta:
         verbose_name = _('Завтрак')
