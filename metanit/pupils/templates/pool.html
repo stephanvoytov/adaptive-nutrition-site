@@ -10,13 +10,42 @@
             <h2>На две недели вперед</h2>
         </hgroup>
 
+        {% if messages %}
+        {% for message in messages %}
+        <div role="alert" class="{% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
         {% if not week_dates %}
         <article>
             <h3>✅ Выбор завершен</h3>
             <p>Следующий выбор будет доступен позже.</p>
         </article>
         {% else %}
-        <form method="POST">
+
+        {# ── Блок предупреждения о дубле (скрыт по умолчанию) ── #}
+        <div id="duplicate-warning" style="display:none;">
+            <article style="border-left: 4px solid var(--pico-color-amber-500, #f59e0b);
+                            background: var(--pico-background-color);
+                            padding: 1rem 1.25rem; margin-bottom: 1rem;">
+                <p>
+                    ⚠️ <strong>На эту неделю уже есть заявка</strong> для
+                    <strong id="dup-pupil-name"></strong>:
+                </p>
+                <div id="dup-weeks-container"></div>
+                <p style="margin-top: 0.75rem; margin-bottom: 0;">
+                    Вы действительно хотите изменить выбор?
+                </p>
+                <div style="display:flex; gap:0.75rem; margin-top:0.75rem; flex-wrap:wrap;">
+                    <button id="btn-confirm-change" type="button">✏️ Да, изменить</button>
+                    <button id="btn-cancel-change" type="button" class="secondary">Нет, оставить как есть</button>
+                </div>
+            </article>
+        </div>
+
+        <form method="POST" id="breakfast-form">
             {% csrf_token %}
 
             <fieldset>
@@ -24,17 +53,19 @@
 
                 <label>
                     Имя
-                    <input type="text" name="first_name" placeholder="Введите имя" required>
+                    <input type="text" id="id_first_name" name="first_name"
+                           placeholder="Введите имя" required autocomplete="off">
                 </label>
 
                 <label>
                     Фамилия
-                    <input type="text" name="last_name" placeholder="Введите фамилию" required>
+                    <input type="text" id="id_last_name" name="last_name"
+                           placeholder="Введите фамилию" required autocomplete="off">
                 </label>
 
                 <label>
                     Класс
-                    <select name="class_name" required>
+                    <select id="id_class_name" name="class_name" required>
                         <option value="">-- Выберите класс --</option>
                         {% for class in classes %}
                         <option value="{{ class.id }}">{{ class.name }}</option>
@@ -43,47 +74,182 @@
                 </label>
             </fieldset>
 
-            {% for week in weeks_data %}
-            <fieldset>
-                <legend>📅 Неделя {{ week.week_number }} ({{ week.week_start|date:"d.m.Y" }})</legend>
+            {# Секция с расписанием — скрывается пока идёт проверка #}
+            <div id="menu-section">
+                {% for week in weeks_data %}
+                <fieldset>
+                    <legend>📅 Неделя {{ week.week_number }} ({{ week.week_start|date:"d.m.Y" }})</legend>
 
-                {% for day in week.data %}
-                <article>
-                    <h4>
-                        {% if day.date.weekday == 0 %}Понедельник
-                        {% elif day.date.weekday == 1 %}Вторник
-                        {% elif day.date.weekday == 2 %}Среда
-                        {% elif day.date.weekday == 3 %}Четверг
-                        {% elif day.date.weekday == 4 %}Пятница{% endif %}
-                        ({{ day.date|date:"d.m" }})
-                    </h4>
+                    {% for day in week.data %}
+                    <article>
+                        <h4>
+                            {% if day.date.weekday == 0 %}Понедельник
+                            {% elif day.date.weekday == 1 %}Вторник
+                            {% elif day.date.weekday == 2 %}Среда
+                            {% elif day.date.weekday == 3 %}Четверг
+                            {% elif day.date.weekday == 4 %}Пятница{% endif %}
+                            ({{ day.date|date:"d.m" }})
+                        </h4>
 
-                    {% if day.has_menu %}
-                    <label>
-                        <input type="radio" name="breakfast_{{ day.date|date:'Y-m-d' }}"
-                               value="{{ day.menu.option_1.id }}" required>
-                        {{ day.menu.option_1.name }}
-                    </label>
-                    <label>
-                        <input type="radio" name="breakfast_{{ day.date|date:'Y-m-d' }}"
-                               value="{{ day.menu.option_2.id }}">
-                        {{ day.menu.option_2.name }}
-                    </label>
-                    <label>
-                        <input type="radio" name="breakfast_{{ day.date|date:'Y-m-d' }}"
-                               value="none" checked>
-                        ❌ Ничего
-                    </label>
-                    {% else %}
-                    <p><small>🚫 Меню не задано</small></p>
-                    {% endif %}
-                </article>
+                        {% if day.has_menu %}
+                        <label>
+                            <input type="radio" name="breakfast_{{ day.date|date:'Y-m-d' }}"
+                                   value="{{ day.menu.option_1.id }}">
+                            {{ day.menu.option_1.name }}
+                        </label>
+                        <label>
+                            <input type="radio" name="breakfast_{{ day.date|date:'Y-m-d' }}"
+                                   value="{{ day.menu.option_2.id }}">
+                            {{ day.menu.option_2.name }}
+                        </label>
+                        <label>
+                            <input type="radio" name="breakfast_{{ day.date|date:'Y-m-d' }}"
+                                   value="none" checked>
+                            ❌ Ничего
+                        </label>
+                        {% else %}
+                        <p><small>🚫 Меню не задано</small></p>
+                        {% endif %}
+                    </article>
+                    {% endfor %}
+                </fieldset>
                 {% endfor %}
-            </fieldset>
-            {% endfor %}
 
-            <button type="submit" class="contrast">💾 Сохранить выбор</button>
+                <button type="submit" class="contrast" id="btn-submit">💾 Сохранить выбор</button>
+            </div>
         </form>
         {% endif %}
     </article>
+
+<script>
+(function () {
+    // Состояние: нужно ли подтверждение перед отправкой
+    let pendingDuplicate = false;
+
+    const firstNameEl = document.getElementById('id_first_name');
+    const lastNameEl  = document.getElementById('id_last_name');
+    const classEl     = document.getElementById('id_class_name');
+    const warning     = document.getElementById('duplicate-warning');
+    const menuSection = document.getElementById('menu-section');
+    const form        = document.getElementById('breakfast-form');
+
+    if (!firstNameEl) return; // страница без формы — выход
+
+    let debounceTimer = null;
+
+    function triggerCheck() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(checkPupil, 450);
+    }
+
+    function checkPupil() {
+        const firstName = firstNameEl.value.trim();
+        const lastName  = lastNameEl.value.trim();
+        const classId   = classEl.value;
+
+        // Проверяем только если все три поля заполнены
+        if (!firstName || !lastName || !classId) {
+            hideWarning();
+            return;
+        }
+
+        const url = '/pool/check-pupil/?'
+            + 'first_name=' + encodeURIComponent(firstName)
+            + '&last_name='  + encodeURIComponent(lastName)
+            + '&class_id='   + encodeURIComponent(classId);
+
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                if (data.found) {
+                    showWarning(data);
+                } else {
+                    hideWarning();
+                }
+            })
+            .catch(() => hideWarning());
+    }
+
+    function showWarning(data) {
+        pendingDuplicate = true;
+
+        document.getElementById('dup-pupil-name').textContent = data.pupil_name;
+
+        // Строим таблицу(ы) с существующим выбором
+        const container = document.getElementById('dup-weeks-container');
+        container.innerHTML = '';
+
+        data.weeks.forEach(week => {
+            const title = document.createElement('p');
+            title.style.marginBottom = '0.25rem';
+            title.innerHTML = '<strong>Неделя ' + week.week_start + ' – ' + week.week_end + ':</strong>';
+            container.appendChild(title);
+
+            const table = document.createElement('table');
+            table.style.cssText = 'margin-bottom:0.5rem; font-size:0.9em;';
+
+            const thead = table.createTHead();
+            const hRow = thead.insertRow();
+            week.days.forEach(d => {
+                const th = document.createElement('th');
+                th.textContent = d.day;
+                th.style.textAlign = 'center';
+                hRow.appendChild(th);
+            });
+
+            const tbody = table.createTBody();
+            const dRow = tbody.insertRow();
+            week.days.forEach(d => {
+                const td = dRow.insertCell();
+                td.textContent = d.dish;
+                td.style.textAlign = 'center';
+            });
+
+            container.appendChild(table);
+        });
+
+        warning.style.display = 'block';
+        // Скрываем секцию с меню до подтверждения
+        menuSection.style.display = 'none';
+    }
+
+    function hideWarning() {
+        pendingDuplicate = false;
+        warning.style.display = 'none';
+        menuSection.style.display = '';
+    }
+
+    // Кнопка «Да, изменить»
+    document.getElementById('btn-confirm-change').addEventListener('click', function () {
+        pendingDuplicate = false;
+        warning.style.display = 'none';
+        menuSection.style.display = '';
+        // Скроллим к меню
+        menuSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Кнопка «Нет, оставить»
+    document.getElementById('btn-cancel-change').addEventListener('click', function () {
+        // Сбрасываем поля ученика
+        firstNameEl.value = '';
+        lastNameEl.value  = '';
+        classEl.value     = '';
+        hideWarning();
+        firstNameEl.focus();
+    });
+
+    // Отправка формы: если дубль всё ещё активен — блокируем
+    form.addEventListener('submit', function (e) {
+        if (pendingDuplicate) {
+            e.preventDefault();
+        }
+    });
+
+    // Навешиваем проверку на все три поля
+    [firstNameEl, lastNameEl].forEach(el => {
+        el.addEventListener('input', triggerCheck);
+    });
+    classEl.addEventListener('change', triggerCheck);
+})();
+</script>
 {% endblock %}

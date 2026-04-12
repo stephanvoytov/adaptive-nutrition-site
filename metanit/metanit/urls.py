@@ -21,4 +21,5 @@ from pupils import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('pool/', views.pooling, name='pool'),
-    path('', views.index, name='index'),]
+    path('', views.index, name='index'),
+    path('pool/check-pupil/', views.check_pupil, name='check_pupil'), ]
