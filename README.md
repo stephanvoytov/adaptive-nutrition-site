@@ -1,10 +1,10 @@
-# 🌱 Adaptive Nutrition Site
+# Adaptive Nutrition Site
 
 **AdaptiveNutritionSite** is a web platform designed to automate school meal selection for primary school students. It reduces teachers' administrative workload and provides the school cafeteria with accurate production data, helping minimize food waste and errors.
 
 ---
 
-## 🎯 Project Goal
+## Project Goal
 
 The platform aims to:
 
@@ -14,7 +14,7 @@ The platform aims to:
 
 ---
 
-## 📝 Key Features
+## Key Features
 
 - **Student/Parent Interface:** Simple weekly meal selection with a single click per day. Designed for young students.
 - **Teacher/Admin Dashboard:** Displays student responses, generates weekly class summaries automatically.
@@ -24,7 +24,7 @@ The platform aims to:
 
 ---
 
-## 💻 Technology Stack
+## Technology Stack
 
 - **Backend:** Python / Django (MVC architecture)
 - **Frontend:** Django Templates (HTML, CSS, JavaScript)
@@ -32,9 +32,50 @@ The platform aims to:
 - **Excel Reporting:** openpyxl library
 - **Security:** Role-based authentication, compliant with GDPR/FZ-152
 
+## Installation and Running
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/stephanvoytov/adaptive-nutrition-site.git
+   cd adaptive-nutrition-site
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Set up the database:
+   ```bash
+   cd metanit
+   python manage.py migrate
+   python manage.py createsuperuser
+   ```
+
+5. Run the development server:
+   ```bash
+   python manage.py runserver
+   ```
+
+The application will be available at http://localhost:8000
+
+## Database Setup
+
+The project uses PostgreSQL by default. To use SQLite instead:
+
+1. Edit `metanit/settings.py` and comment out the PostgreSQL settings
+2. Uncomment the SQLite settings
+3. Run migrations as above
+
 ---
 
-## ⚡ User Stories
+## User Stories
 
 - **Parent:** Quickly select meals for my child in one place and be sure the teacher receives it automatically.
 - **Teacher:** Automatically generate weekly class meal summaries without manual consolidation.
@@ -42,7 +83,7 @@ The platform aims to:
 
 ---
 
-## 🏗 System Design
+## System Design
 
 - **Database:** Relational PostgreSQL with normalized tables for Classes, Students, Dishes, DailyMenus, and WeeklyBreakfasts.
 - **One-to-One Mapping:** Each student has one active weekly selection to avoid duplicates.
@@ -53,21 +94,20 @@ The platform aims to:
 
 ---
 
-## 📊 Benefits
+## Benefits
 
 - Saves teachers up to 3 hours per week.
 - Provides accurate, standardized reports for classrooms and the school.
 - Ensures dietary restrictions and allergies are respected.
-- Reduces food waste by 15–25%.
+- Reduces food waste by 15-25%.
 - Scalable and extendable for multiple schools.
 
 ---
 
-## 🔒 Security & Compliance
+## Security & Compliance
 
 - Role-based authentication and permissions.
 - Compliant with GDPR and Russian FZ-152 for student data.
 - Reliable authorization system.
 
 ---
-
